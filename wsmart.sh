@@ -14,6 +14,8 @@ isProtocol() {
 
 iwctl station wlan0 scan
 
+sleep 0.5
+
 input=$(iwctl station wlan0 get-networks)
 
 networks=()
