@@ -1,5 +1,11 @@
 #!/bin/bash
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
 protocols=('psk' '8021x')
 
 isProtocol() {
@@ -33,10 +39,10 @@ for i in ${input[@]}; do
     previous=$i
 done
 
-echo 'Available networks:'
+echo -e "${BLUE}Available networks:"
 
 for i in ${!networks[@]}; do
-    echo "[$i] ${networks[$i]}"
+    echo -e "${YELLOW}[$i] ${NC}${networks[$i]}"
 done
 
 echo
@@ -49,7 +55,7 @@ fi
 
 re='^[0-9]+$'
 if ! [[ $index =~ $re ]] || [ $index -lt 0 ] || [ $index -ge ${#networks[@]} ]; then
-    echo 'error: invalid network id'
+    echo -e "${RED}error: invalid network id${NC}"
     exit
 fi
 

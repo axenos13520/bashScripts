@@ -1,9 +1,15 @@
 #!/bin/bash
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
 option=${1:1}
 
 if [ ${#option} -eq 0 ]; then
-    echo 'error: no operation specified (use -h for help)'
+    echo -e "${RED}error: no operation specified (use -h for help)${NC}"
     exit
 fi
 
@@ -24,7 +30,7 @@ if [ $option = 'h' ]; then
 fi
 
 if [ $option != 'c' ] && [ $option != 'd' ]; then
-    echo "bsmart: invalid option -- '$option'"
+    echo -e "${RED}bsmart: invalid option -- '$option'${NC}"
     exit
 fi
 
@@ -48,9 +54,9 @@ for i in ${!input[@]}; do
     fi
 done
 
-echo 'Paired devices:'
+echo -e "${BLUE}Paired devices:${NC}"
 for i in ${!devices[@]}; do
-    echo "[$i] ${devices[i]}"
+    echo -e "${YELLOW}[$i] ${NC}${devices[i]}"
 done
 
 echo
@@ -66,7 +72,7 @@ fi
 
 re='^[0-9]+$'
 if ! [[ $index =~ $re ]] || [ $index -lt 0 ] || [ $index -ge ${#macArray[@]} ]; then
-    echo 'error: invalid device id'
+    echo -e "${RED}error: invalid device id${NC}"
     exit
 fi
 
