@@ -25,6 +25,7 @@ sleep 0.5
 input=$(iwctl station wlan0 get-networks)
 
 networks=()
+networkProtocols=()
 count=0
 
 previous=''
@@ -33,6 +34,7 @@ for i in ${input[@]}; do
 
     if [ $? -eq 1 ] && [ $count -lt 20 ]; then
         networks=(${networks[@]} $previous)
+        networkProtocols=(${networkProtocols[@]} $i)
         count=$(expr $count + 1)
     fi
 
@@ -42,7 +44,7 @@ done
 echo -e "${BLUE}Available networks:"
 
 for i in ${!networks[@]}; do
-    echo -e "${YELLOW}[$i] ${NC}${networks[$i]}"
+    echo -e "${YELLOW}[$i] ${NC}${networks[$i]} ${BLUE}${networkProtocols[i]}${NC}"
 done
 
 echo
