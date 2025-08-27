@@ -13,57 +13,56 @@ if [ ${#option} -eq 0 ]; then
     exit
 fi
 
-case $option in
+case "$option" in
 '-help') option='h' ;;
 '-connect') option='c' ;;
 '-disconnect') option='d' ;;
+'-remove') option='r' ;;
 esac
 
-if [ $option = 'h' ]; then
+if [ "$option" = 'h' ]; then
     echo 'usage: bsmart <operation>'
     echo 'operations:'
-    echo '  bsmart {-h --help}'
-    echo '  bsmart {-c --connect}'
-    echo '  bsmart {-d --disconnect}'
-
+    echo '  -h --help: open this help page'
+    echo '  -c --connect: connect to paired device'
+    echo '  -d --disconnect: disconnect from paired device'
+    echo '  -r --remove: unpair device'
     exit
 fi
 
-if [ $option != 'c' ] && [ $option != 'd' ]; then
+if [ "$option" != 'c' ] && [ "$option" != 'd' ] && [ "$option" != 'r' ]; then
     echo -e "${RED}bsmart: invalid option -- '$option'${NC}"
     exit
 fi
 
-input=($(bluetoothctl devices))
+mapfile -t input < <(bluetoothctl devices)
+
 devices=()
 macArray=()
 
-for i in ${!input[@]}; do
-    if [ ${input[i]} = 'Device' ]; then
-        macArray=(${macArray[@]} ${input[(i + 1)]})
+for i in "${!input[@]}"; do
+    read -ra words <<<"${input[$i]}"
 
-        j=$(expr $i + 2)
-        current=''
-        while [ $j -lt ${#input[@]} ] && [ ${input[$j]} != 'Device' ]; do
-            current+="${input[$j]}-"
-            j=$(expr $j + 1)
-        done
-        current=${current:0:-1}
+    if [ "${words[0]}" == "Device" ]; then
+        macArray=("${macArray[@]}" "${words[1]}")
 
-        devices=(${devices[@]} $current)
+        current="${words[*]:2}"
+
+        devices=("${devices[@]}" "$current")
     fi
 done
 
 echo -e "${BLUE}Paired devices:${NC}"
-for i in ${!devices[@]}; do
-    echo -e "${YELLOW}[$i] ${NC}${devices[i]}"
+for i in "${!devices[@]}"; do
+    echo -e "${YELLOW}[$i] ${NC}${devices[$i]} | ${macArray[$i]}"
 done
 
 echo
 
-case $option in
-'c') read -p 'enter device id to connect (default - 0): ' index ;;
-'d') read -p 'enter device id to disconnect (default - 0): ' index ;;
+case "$option" in
+'c') read -rp 'enter device id to connect (default - 0): ' index ;;
+'d') read -rp 'enter device id to disconnect (default - 0): ' index ;;
+'r') read -rp 'enter device id to remove (default - 0): ' index ;;
 esac
 
 if [ ${#index} -eq 0 ]; then
@@ -71,12 +70,15 @@ if [ ${#index} -eq 0 ]; then
 fi
 
 re='^[0-9]+$'
-if ! [[ $index =~ $re ]] || [ $index -lt 0 ] || [ $index -ge ${#macArray[@]} ]; then
+if ! [[ $index =~ $re ]] || [ "$index" -lt 0 ] || [ "$index" -ge ${#macArray[@]} ]; then
     echo -e "${RED}error: invalid device id${NC}"
     exit
 fi
 
-case $option in
-'c') bluetoothctl connect ${macArray[$index]} ;;
-'d') bluetoothctl disconnect ${macArray[$index]} ;;
+deviceMac="${macArray[$index]}"
+
+case "$option" in
+'c') bluetoothctl connect "$deviceMac" ;;
+'d') bluetoothctl disconnect "$deviceMac" ;;
+'r') bluetoothctl remove "$deviceMac" ;;
 esac
